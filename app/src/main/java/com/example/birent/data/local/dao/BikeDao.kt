@@ -16,12 +16,15 @@ interface BikeDao {
         AND (:type IS NULL OR type = :type)
         AND (:minPrice IS NULL OR priceHour >= :minPrice)
         AND (:maxPrice IS NULL OR priceHour <= :maxPrice)
+        AND speeds >= :minSpeeds AND speeds <= :maxSpeeds
     """)
     fun searchBikesFlow(
         query: String?,
         type: BikeType?,
         minPrice: Double?,
-        maxPrice: Double?
+        maxPrice: Double?,
+        minSpeeds: Int = 0,
+        maxSpeeds: Int = 100
     ): Flow<List<BikeEntity>>
 
     @Query("SELECT * FROM bikes WHERE id = :id LIMIT 1")

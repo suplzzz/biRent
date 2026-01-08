@@ -70,7 +70,7 @@ class ProfileViewModel @Inject constructor(
 
     fun adminCompleteRent(orderId: Long) {
         viewModelScope.launch {
-            adminOrderActionUseCase.completeRent(orderId, 0.0)
+            adminOrderActionUseCase.completeRent(orderId)
         }
     }
 
@@ -80,8 +80,8 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    @SuppressLint("DefaultLocale")
     @RequiresApi(Build.VERSION_CODES.S)
+    @SuppressLint("DefaultLocale")
     private fun startTimerLoop() {
         viewModelScope.launch {
             while (true) {

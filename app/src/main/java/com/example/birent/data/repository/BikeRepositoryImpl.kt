@@ -27,7 +27,9 @@ class BikeRepositoryImpl @Inject constructor(
         minPrice: Double?,
         maxPrice: Double?
     ): Flow<List<Bike>> {
-        return bikeDao.searchBikesFlow(query, type, minPrice, maxPrice).map { entities ->
+        return bikeDao.searchBikesFlow(
+            query, type, minPrice, maxPrice, minSpeeds, maxSpeeds
+        ).map { entities ->
             entities.map { entity ->
                 val rented = bikeDao.getRentedCountSync(entity.id) ?: 0
                 entity.toDomain(rented)

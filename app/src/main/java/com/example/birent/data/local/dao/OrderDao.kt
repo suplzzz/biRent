@@ -20,7 +20,6 @@ interface OrderDao {
     @Insert
     suspend fun insertOrderItems(items: List<OrderItemEntity>)
 
-    // ИСПРАВЛЕНО: Возвращаем Flow для автоматического обновления списка
     @Transaction
     @Query("SELECT * FROM orders WHERE userId = :userId ORDER BY createdDate DESC")
     fun getUserOrdersFlow(userId: Long): Flow<List<OrderWithItems>>
