@@ -28,6 +28,7 @@ class CatalogViewModel @Inject constructor(
             bikeRepository.searchBikes(
                 query = filters.query.takeIf { it.isNotBlank() },
                 type = filters.selectedType,
+                frameSize = filters.selectedFrameSize,
                 minPrice = filters.minPrice,
                 maxPrice = filters.maxPrice,
                 minSpeeds = filters.minSpeeds,
@@ -51,11 +52,11 @@ class CatalogViewModel @Inject constructor(
         when (command) {
             is CatalogCommand.Search -> _filterState.update { it.copy(query = command.query) }
             is CatalogCommand.FilterType -> _filterState.update { it.copy(selectedType = command.type) }
+            is CatalogCommand.FilterFrameSize -> _filterState.update { it.copy(selectedFrameSize = command.size) }
             is CatalogCommand.AddToCart -> addToCart(command.bikeId)
             CatalogCommand.ToggleFilters -> _filterState.update { it.copy(isFilterVisible = !it.isFilterVisible) }
-            is CatalogCommand.SetSpeedRange -> _filterState.update {
-                it.copy(minSpeeds = command.min, maxSpeeds = command.max)
-            }
+            is CatalogCommand.SetSpeedRange -> _filterState.update { it.copy(minSpeeds = command.min, maxSpeeds = command.max) }
+            is CatalogCommand.SetPriceRange -> _filterState.update { it.copy(minPrice = command.min, maxPrice = command.max) }
         }
     }
 
@@ -70,9 +71,10 @@ class CatalogViewModel @Inject constructor(
 data class CatalogFilterState(
     val query: String = "",
     val selectedType: BikeType? = null,
+    val selectedFrameSize: String? = null,
     val isFilterVisible: Boolean = false,
-    val minPrice: Double? = null,
-    val maxPrice: Double? = null,
+    val minPrice: Double = 0.0,
+    val maxPrice: Double = 1000.0,
     val minSpeeds: Int = 0,
     val maxSpeeds: Int = 30
 )
@@ -86,9 +88,11 @@ data class CatalogState(
 sealed interface CatalogCommand {
     data class Search(val query: String) : CatalogCommand
     data class FilterType(val type: BikeType?) : CatalogCommand
+    data class FilterFrameSize(val size: String?) : CatalogCommand
     data object ToggleFilters : CatalogCommand
     data class AddToCart(val bikeId: Long) : CatalogCommand
     data class SetSpeedRange(val min: Int, val max: Int) : CatalogCommand
+    data class SetPriceRange(val min: Double, val max: Double) : CatalogCommand
 }
 
 sealed interface CatalogEffect {

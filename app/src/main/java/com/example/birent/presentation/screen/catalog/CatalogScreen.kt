@@ -52,11 +52,11 @@ fun CatalogScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             AnimatedVisibility(visible = state.filterState.isFilterVisible) {
                 FiltersSection(
-                    selectedType = state.filterState.selectedType,
-                    minSpeeds = state.filterState.minSpeeds,
-                    maxSpeeds = state.filterState.maxSpeeds,
+                    filterState = state.filterState,
                     onTypeSelect = { viewModel.processCommand(CatalogCommand.FilterType(it)) },
-                    onSpeedChange = { min, max -> viewModel.processCommand(CatalogCommand.SetSpeedRange(min, max)) }
+                    onFrameSelect = { viewModel.processCommand(CatalogCommand.FilterFrameSize(it)) },
+                    onSpeedChange = { min, max -> viewModel.processCommand(CatalogCommand.SetSpeedRange(min, max)) },
+                    onPriceChange = { min, max -> viewModel.processCommand(CatalogCommand.SetPriceRange(min, max)) }
                 )
             }
 
@@ -101,26 +101,26 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit, onToggleFilter: ()
 
 @Composable
 fun FiltersSection(
-    selectedType: BikeType?,
-    minSpeeds: Int,
-    maxSpeeds: Int,
+    filterState: CatalogFilterState,
     onTypeSelect: (BikeType?) -> Unit,
-    onSpeedChange: (Int, Int) -> Unit
+    onFrameSelect: (String?) -> Unit,
+    onSpeedChange: (Int, Int) -> Unit,
+    onPriceChange: (Double, Double) -> Unit
 ) {
     Column(Modifier.padding(16.dp)) {
-        // 1. Фильтр по типу
+        // 1. Тип
         Text("Тип велосипеда", style = MaterialTheme.typography.labelLarge)
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 FilterChip(
-                    selected = selectedType == null,
+                    selected = filterState.selectedType == null,
                     onClick = { onTypeSelect(null) },
                     label = { Text("Все") }
                 )
             }
             items(BikeType.values()) { type ->
                 FilterChip(
-                    selected = selectedType == type,
+                    selected = filterState.selectedType == type,
                     onClick = { onTypeSelect(type) },
                     label = { Text(type.name) }
                 )
@@ -129,15 +129,50 @@ fun FiltersSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Количество скоростей: $minSpeeds - $maxSpeeds", style = MaterialTheme.typography.labelLarge)
+        // 2. Размер рамы (Характеристика)
+        Text("Размер рамы", style = MaterialTheme.typography.labelLarge)
+        val frameSizes = listOf("M", "L", "19 inch", "Universal")
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            item {
+                FilterChip(
+                    selected = filterState.selectedFrameSize == null,
+                    onClick = { onFrameSelect(null) },
+                    label = { Text("Любой") }
+                )
+            }
+            items(frameSizes) { size ->
+                FilterChip(
+                    selected = filterState.selectedFrameSize == size,
+                    onClick = { onFrameSelect(size) },
+                    label = { Text(size) }
+                )
+            }
+        }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 3. Скорости (Характеристика - диапазон)
+        Text("Скорости: ${filterState.minSpeeds} - ${filterState.maxSpeeds}", style = MaterialTheme.typography.labelLarge)
         RangeSlider(
-            value = minSpeeds.toFloat()..maxSpeeds.toFloat(),
+            value = filterState.minSpeeds.toFloat()..filterState.maxSpeeds.toFloat(),
             onValueChange = { range ->
                 onSpeedChange(range.start.roundToInt(), range.endInclusive.roundToInt())
             },
-            valueRange = 1f..30f,
+            valueRange = 0f..30f,
             steps = 29
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 4. Цена за час (Диапазон)
+        Text("Цена (час): ${filterState.minPrice.toInt()} - ${filterState.maxPrice.toInt()} ₽", style = MaterialTheme.typography.labelLarge)
+        RangeSlider(
+            value = filterState.minPrice.toFloat()..filterState.maxPrice.toFloat(),
+            onValueChange = { range ->
+                onPriceChange(range.start.toDouble(), range.endInclusive.toDouble())
+            },
+            valueRange = 0f..1000f,
+            steps = 9
         )
     }
 }
@@ -155,7 +190,7 @@ fun BikeCard(bike: Bike, onAdd: (Long) -> Unit) {
                 }
             }
             Spacer(Modifier.height(4.dp))
-            Text("${bike.type.name} • ${bike.speeds} скоростей • Рама ${bike.frameSize}", style = MaterialTheme.typography.bodyMedium)
+            Text("${bike.type.name} • ${bike.speeds} ск. • Рама ${bike.frameSize}", style = MaterialTheme.typography.bodyMedium)
             Text("Цвет: ${bike.color}")
             Spacer(Modifier.height(8.dp))
             Text("${bike.priceHour} ₽/час • ${bike.priceDay} ₽/сутки", style = MaterialTheme.typography.titleSmall)

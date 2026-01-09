@@ -10,6 +10,7 @@ interface BikeRepository {
     fun searchBikes(
         query: String? = null,
         type: BikeType? = null,
+        frameSize: String? = null,
         minSpeeds: Int = 0,
         maxSpeeds: Int = 100,
         minPrice: Double? = null,

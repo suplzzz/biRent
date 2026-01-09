@@ -22,13 +22,14 @@ class BikeRepositoryImpl @Inject constructor(
     override fun searchBikes(
         query: String?,
         type: BikeType?,
+        frameSize: String?,
         minSpeeds: Int,
         maxSpeeds: Int,
         minPrice: Double?,
         maxPrice: Double?
     ): Flow<List<Bike>> {
         return bikeDao.searchBikesFlow(
-            query, type, minPrice, maxPrice, minSpeeds, maxSpeeds
+            query, type, frameSize, minPrice, maxPrice, minSpeeds, maxSpeeds
         ).map { entities ->
             entities.map { entity ->
                 val rented = bikeDao.getRentedCountSync(entity.id) ?: 0

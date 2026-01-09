@@ -14,6 +14,7 @@ interface BikeDao {
         SELECT * FROM bikes 
         WHERE (:query IS NULL OR model LIKE '%' || :query || '%')
         AND (:type IS NULL OR type = :type)
+        AND (:frameSize IS NULL OR frameSize = :frameSize)
         AND (:minPrice IS NULL OR priceHour >= :minPrice)
         AND (:maxPrice IS NULL OR priceHour <= :maxPrice)
         AND speeds >= :minSpeeds AND speeds <= :maxSpeeds
@@ -21,6 +22,7 @@ interface BikeDao {
     fun searchBikesFlow(
         query: String?,
         type: BikeType?,
+        frameSize: String?,
         minPrice: Double?,
         maxPrice: Double?,
         minSpeeds: Int = 0,
