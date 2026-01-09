@@ -29,7 +29,9 @@ class CatalogViewModel @Inject constructor(
                 query = filters.query.takeIf { it.isNotBlank() },
                 type = filters.selectedType,
                 minPrice = filters.minPrice,
-                maxPrice = filters.maxPrice
+                maxPrice = filters.maxPrice,
+                minSpeeds = filters.minSpeeds,
+                maxSpeeds = filters.maxSpeeds
             ).map { bikes ->
                 CatalogState(
                     isLoading = false,
@@ -51,7 +53,9 @@ class CatalogViewModel @Inject constructor(
             is CatalogCommand.FilterType -> _filterState.update { it.copy(selectedType = command.type) }
             is CatalogCommand.AddToCart -> addToCart(command.bikeId)
             CatalogCommand.ToggleFilters -> _filterState.update { it.copy(isFilterVisible = !it.isFilterVisible) }
-            is CatalogCommand.SetPriceRange -> _filterState.update { it.copy(minPrice = command.min, maxPrice = command.max) }
+            is CatalogCommand.SetSpeedRange -> _filterState.update {
+                it.copy(minSpeeds = command.min, maxSpeeds = command.max)
+            }
         }
     }
 
@@ -68,7 +72,9 @@ data class CatalogFilterState(
     val selectedType: BikeType? = null,
     val isFilterVisible: Boolean = false,
     val minPrice: Double? = null,
-    val maxPrice: Double? = null
+    val maxPrice: Double? = null,
+    val minSpeeds: Int = 0,
+    val maxSpeeds: Int = 30
 )
 
 data class CatalogState(
@@ -81,8 +87,8 @@ sealed interface CatalogCommand {
     data class Search(val query: String) : CatalogCommand
     data class FilterType(val type: BikeType?) : CatalogCommand
     data object ToggleFilters : CatalogCommand
-    data class SetPriceRange(val min: Double?, val max: Double?) : CatalogCommand
     data class AddToCart(val bikeId: Long) : CatalogCommand
+    data class SetSpeedRange(val min: Int, val max: Int) : CatalogCommand
 }
 
 sealed interface CatalogEffect {

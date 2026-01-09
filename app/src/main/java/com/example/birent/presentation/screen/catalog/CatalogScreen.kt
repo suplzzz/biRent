@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.birent.data.local.BikeType
 import com.example.birent.domain.model.Bike
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +53,10 @@ fun CatalogScreen(
             AnimatedVisibility(visible = state.filterState.isFilterVisible) {
                 FiltersSection(
                     selectedType = state.filterState.selectedType,
-                    onTypeSelect = { viewModel.processCommand(CatalogCommand.FilterType(it)) }
+                    minSpeeds = state.filterState.minSpeeds,
+                    maxSpeeds = state.filterState.maxSpeeds,
+                    onTypeSelect = { viewModel.processCommand(CatalogCommand.FilterType(it)) },
+                    onSpeedChange = { min, max -> viewModel.processCommand(CatalogCommand.SetSpeedRange(min, max)) }
                 )
             }
 
@@ -96,8 +100,15 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit, onToggleFilter: ()
 }
 
 @Composable
-fun FiltersSection(selectedType: BikeType?, onTypeSelect: (BikeType?) -> Unit) {
+fun FiltersSection(
+    selectedType: BikeType?,
+    minSpeeds: Int,
+    maxSpeeds: Int,
+    onTypeSelect: (BikeType?) -> Unit,
+    onSpeedChange: (Int, Int) -> Unit
+) {
     Column(Modifier.padding(16.dp)) {
+        // 1. Фильтр по типу
         Text("Тип велосипеда", style = MaterialTheme.typography.labelLarge)
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
@@ -115,6 +126,19 @@ fun FiltersSection(selectedType: BikeType?, onTypeSelect: (BikeType?) -> Unit) {
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Количество скоростей: $minSpeeds - $maxSpeeds", style = MaterialTheme.typography.labelLarge)
+
+        RangeSlider(
+            value = minSpeeds.toFloat()..maxSpeeds.toFloat(),
+            onValueChange = { range ->
+                onSpeedChange(range.start.roundToInt(), range.endInclusive.roundToInt())
+            },
+            valueRange = 1f..30f,
+            steps = 29
+        )
     }
 }
 
